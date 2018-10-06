@@ -26,46 +26,10 @@ char buffauxiliar[1500];
 
 
 
-int Buscar(char* palab);
-void Reservadas();
-void CerearContadOr();
-/*
-//funcion cererar contador
-void CerearContador(){
-        for(int i=0; i<21;i++){
-                Contador[i]=0;
-        }
-}
-//fin func      
+int buscar(char* palab);
+void definir_pal_reservadas();
+void cerearcontadOr();
 
-//Funcion lista palabras reservadas
-void Reservadas(){
-        PalabrasReservadas[0]="THESE";
-        PalabrasReservadas[1]="ADVENTURE";
-        PalabrasReservadas[2]="WITHOUT";
-}
-
-
-//Funcion Buscar pal reservada en hijo2
-int Buscar(char* palab){
-
-
-        char palabra[25];
-        strcpy(palabra,palab);
-        int j=0;
-        for(int i=0; i<strlen(palabra); i++){
-                palabra[i]=toupper(palabra[i]);
-        }
-        int nn=1;
-        while(nn!=0 && j<3){
-                nn=strcmp(palabra,PalabrasReservadas[j]);
-                j++;
-        }
-        if(nn==0) return j-1;
-        else return -1;
-}
-
-*/
 
 //Funcion Imprimir Palabra Reservada
 int Resto(char* palabra, int indpal, int tam2){
@@ -95,7 +59,7 @@ int Resto(char* palabra, int indpal, int tam2){
         }
 
         char buffaux[1500];
-        strcpy(buffaux,buffauxiliar);
+        strncpy(buffaux,buffauxiliar,sizeof(buffauxiliar));
 
         memset(buffauxiliar,'\0',tam2);
         for(int g=aux;g<tam2;g++){
@@ -109,7 +73,7 @@ int Resto(char* palabra, int indpal, int tam2){
 }
 
 //Funcion hijo 1 contador
-int Hijo1(int *leido, char *ptr , sem_t *sema, sem_t *sem2){
+int Hijo1(int *leido, char *ptr , sem_t *sem1, sem_t *sem1p){
 
         
   int tamanio;
@@ -117,7 +81,7 @@ int Hijo1(int *leido, char *ptr , sem_t *sema, sem_t *sem2){
         char d2[]="|123456789 - 0'¿°!«#$%&/()=—?¡[]_:;,.-{+}´ \n";
 
         int j;
-        CerearContador();        
+        cerearcontador();        
         while(*leido>0){
                 for(int i= 0; i<*leido;i++){
 		        buff[i]=ptr[i];
@@ -131,8 +95,8 @@ int Hijo1(int *leido, char *ptr , sem_t *sema, sem_t *sem2){
                         lineas[j]=strtok(NULL,d2);
 
                 }
-                sem_post(sem2);
-                sem_wait(sema);
+                sem_post(sem1p);
+                sem_wait(sem1);
         }
         // Contadores listos
         for(int g=0;g<21;g++){
@@ -140,7 +104,7 @@ int Hijo1(int *leido, char *ptr , sem_t *sema, sem_t *sem2){
             }
         printf("\n");
 
-        sem_post(sem2);
+        sem_post(sem1p);
       
 
         return 0;
@@ -151,7 +115,7 @@ int Hijo1(int *leido, char *ptr , sem_t *sema, sem_t *sem2){
 //Funcion Hijo 2 conversor a mayus
 int Hijo2(int leido, char *buff){
 
-        Reservadas();
+        definir_pal_reservadas();
 
         char d2[]="|123456789 - 0'¿°!«#$%&/()=—?¡[]_:;,.-{+}´ \n\t";
         char * lineas[256];
@@ -166,7 +130,7 @@ int Hijo2(int leido, char *buff){
         j=0;
         lineas[j]=strtok(buff,d2);
         while(lineas[j]!=NULL){
-                indpal=Buscar(lineas[j]);
+                indpal=buscar(lineas[j]);
                 h++;
                 if(indpal!=-1){
                         tambuff=Resto(lineas[j],indpal,tambuff);//imprime all hasta pal
@@ -203,17 +167,17 @@ int main(int argc, char * const argv[]){
         ptr = mmap(NULL,(4 * sizeof(sem_t))+ sizeof (int),PROT_READ|PROT_WRITE,MAP_ANONYMOUS|MAP_SHARED,-1, 0);
         int *leido;
         //leido = mmap(NULL,10,PROT_READ|PROT_WRITE,MAP_ANONYMOUS|MAP_SHARED,-1, 0);
-        sem_t *sema, *sem2, *sema1, *sema2;
+        sem_t *sem1, *sem1p, *sem2, *sem2p;
        
-	sema = (sem_t *) ptr + sizeof sema;
-	sem2 = sema + sizeof sem2;
-	sema1= sem2 + sizeof sema1;
-	sema2= sema1 + sizeof sema2;
-        leido= (int *)sema2+ sizeof leido;
-	sem_init(sema,1,0);
+	sem1 = (sem_t *) ptr + sizeof sem1;
+	sem1p = sem1 + sizeof sem1p;
+	sem2= sem1p + sizeof sem2;
+	sem2p= sem2 + sizeof sem2p;
+        leido= (int *)sem2p+ sizeof leido;
+	sem_init(sem1,1,0);
+	sem_init(sem1p,1,0);
 	sem_init(sem2,1,0);
-	sem_init(sema1,1,0);
-	sem_init(sema2,1,0);
+	sem_init(sem2p,1,0);
 
 
         /* bucle para loopear por las opciones pasadas */
@@ -240,19 +204,19 @@ int main(int argc, char * const argv[]){
     }
 
 if(procnum==1){
-        sem_wait(sema); //sem rojo
-        Hijo1(leido, ptr,sema,sem2);          
+        sem_wait(sem1); //sem rojo
+        Hijo1(leido, ptr,sem1,sem1p);          
         return 0;
 }
 
 if(procnum==2){
         do{
-        sem_wait(sema1);
+        sem_wait(sem2);
          for(int i= 0; i<*leido;i++){
 		buff[i]=ptr[i];
-	}
+	        }
         Hijo2(*leido, buff);
-        sem_post(sema2);
+        sem_post(sem2p);
         }while(*leido!=0); 
 return 0;
 }
@@ -263,33 +227,24 @@ return 0;
 
                while((*leido=read(arch,ptr,120))>0){
                      
-                        //printf("-PADRE: ENTRO WHILE \n");
-                       //write(STDOUT_FILENO,ptr,*leido);
-                        sem_post(sema1);
-			sem_post(sema);
-
-			sem_wait(sema2);
-                       sem_wait(sem2);
-                        //write
-                        //write
+                        sem_post(sem2);
+			            sem_post(sem1);
+			            sem_wait(sem2p);
+                        sem_wait(sem1p);
+                        
+                       
                 }
-                sem_post(sema);
-                 close(arch);
+                sem_post(sem1);
+                close(arch);
         }else{
                 while((*leido=read(STDIN_FILENO,buffer,sizeof buffer))>0){
-                         // write
-                         //write
-                        //printf("-PADRE: ENTRO WHILE \n");
-                       //write(STDOUT_FILENO,ptr,*leido);
-                        sem_post(sema1);
-			sem_post(sema);
-
-			sem_wait(sema2);
-                       sem_wait(sem2);
-                        //write
-                        //write
+                        sem_post(sem2);
+			            sem_post(sem1);
+			            sem_wait(sem2p);
+                        sem_wait(sem1p);
+                        
                 }
-                sem_post(sema);
+                sem_post(sem1);
 
                 }
 

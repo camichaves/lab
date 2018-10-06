@@ -1,16 +1,16 @@
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 
 
-	const char* PalabrasReservadas[3];
+const char* PalabrasReservadas[3];
+
 //Funcion Buscar pal reservada en hijo2
-int Buscar(char* palab){
+int buscar(char* palab){
 
 
         char palabra[25];
-        strcpy(palabra,palab);
+        strncpy(palabra,palab,25);
         int j=0;
         for(int i=0; i<strlen(palabra); i++){
                 palabra[i]=toupper(palabra[i]);
