@@ -36,8 +36,8 @@ int main(int argc, char * const argv[]){
 
 
 	int fd, fdcliente, leido, conectado, connfd, pid;
-	char buff[1000];
-    char buff2[1000];
+	char buff[5000];
+    //char buff2[2000];
     char c;
     int puerto=5000; //por defecto
 	struct sockaddr_in procrem={};
@@ -138,7 +138,7 @@ char cadena_protocolo[256];
     strcat(cadena_protocolo,"\nConnection: close\n\n");
     //write (1 ,cadena_protocolo,69);
 
-		
+	char buff2[5000]="";
 	write(fdcliente, cadena_protocolo, sizeof cadena_protocolo);
 	while ((leido = read(fdcliente, buff , sizeof buff)) > 0){
 		if  (leido < 0 ){
@@ -146,14 +146,17 @@ char cadena_protocolo[256];
 			return -1;
 		}
     //buscar pal reservada;
-   char buff2[256]="";
-    write(1,buff,leido);
+   
+    //write(1,buff,leido);
     char * puntero=strstr(buff,pal_reservada);
     if(puntero!=NULL){
-        strcpy(buff2,"...");
-        for(int p=0; p<10;p++){ puntero--; if(puntero==buff2){break;}}
-        strncat(buff2,puntero,50);
-        strcat(buff2,"...");
+        
+        char* puntero_aux=puntero;
+        while(*puntero!='\n'){puntero--; }
+        puntero++;
+        while(*puntero_aux!='\n'){puntero_aux++;}
+        strncat(buff2,puntero,(puntero_aux-puntero));
+        
         break;
     }
 	
