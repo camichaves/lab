@@ -9,6 +9,8 @@
 #include <netdb.h>
 #include <string.h>
 #include "headers.h"
+#include <stdlib.h>
+
 
 /*struct sockaddr_in {
     short            sin_family;   // e.g. AF_INET
@@ -119,6 +121,7 @@ if((bind_socket(a,procrem,fd))<0){return -1;}
 
 	
         struct hostent *hp = gethostbyname(url[0]);
+	if(hp==NULL){ perror ("hethostbyname"); return -1;}
 	
 	inet_pton(AF_INET,inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[0])), &serverhttp.sin_addr);
 	conectado = connect(fdcliente,(struct sockaddr *)&serverhttp, sizeof serverhttp);
