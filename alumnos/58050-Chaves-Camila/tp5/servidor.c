@@ -47,13 +47,13 @@ void *servicio (){
     char dir[256];
     char buff2[1000]="HTTP/1.1 200 Ok\nContent-Length=";
     puntero+=4;
-    int c=0;
+    dir[0]='.';
+    int c=1;
     while(*puntero!=' '){dir[c]=*puntero; puntero++; c++;}
 
 	write (1 ,buff ,leido);
 
     int arch= open(dir, O_RDWR , 0666);
-    write(1,dir,strlen(dir));
     struct stat estru;
     if((fstat(arch,&estru))<0){perror ("fstat"); return 0;};
     int tam=estru.st_size;
