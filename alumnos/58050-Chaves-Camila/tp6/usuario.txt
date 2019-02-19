@@ -1,0 +1,3 @@
+|1|Camila Chaves|camichav@gmail.com|4238832|san juan|5400|
+|2|Guillermo Casasola|Casasola@hotmail.com|4235030|san juan|5400|
+|3|Valentina Herrero|valeh@gmail.com|4332918|mendoza|5500|
